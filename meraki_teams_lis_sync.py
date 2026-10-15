@@ -12,21 +12,21 @@ def get_meraki_bssids():
     dashboard = meraki.DashboardAPI(suppress_logging=True)
 
     org_id = os.getenv('MERAKI_ORGANIZATION_ID')
-    if not org_id:
-        raise ValueError("Missing MERAKI_ORGANIZATION_ID environment variable.")
+    ap_tag = os.getenv('MERAKI_AP_TAG')
+    if not org_id or ap_tag:
+        raise ValueError("Missing MERAKI_ORGANIZATION_ID or MERAKI_AP_TAG environment variable.")
 
     try:
-        tag = 'VAIGS'
         devices = dashboard.organizations.getOrganizationDevices(
             organizationId=org_id,
             productTypes=['wireless'],
-            tags=[tag],
+            tags=[ap_tag],
             total_pages='all'
         )
         
         serials = [d['serial'] for d in devices]
         if not serials:
-            print(f"No wireless devices found with tag '{tag}'.")
+            print(f"No wireless devices found with tag '{ap_tag}'.")
             return
         
         response = dashboard.wireless.getOrganizationWirelessSsidsStatusesByDevice(organizationId=org_id, serials=serials, total_pages='all')
